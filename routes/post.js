@@ -138,7 +138,38 @@ router.get('/friends-post', checkJwt, async (req, res) => {
 
 })
 
-const friendsPosts = function () {
+// router.get('/user-post/:id', checkJwt, (req, res, next) => {
+//   let postsArr = []
+//   db.userSchema.findOne({ _id: req.params.id })
+//     .populate('posts')
+//     .exec( (err, da) => {
+//       for (let i = 0; i < da.posts.length; i++) {
+//         db.postSchema.find({ _id: da.posts[i]._id })
+//           .populate('comments')
+//           .exec((err, post) => {
+//             postsArr.push(post)
+//           })
+//       }
+//       return  Promise.resolve(postsArr) 
+     
+//     }).then((p) => {
+//       console.log(p)
+//     })
 
-}
+// })
+router.get('/user-post/:id', checkJwt, async (req, res, next) => {
+  let index = +req.headers["index2"];
+  try {
+      let da = await db.userSchema.findOne({ _id: req.params.id }).populate('posts').exec();
+      let postsArray = [];
+      for (let post of da.posts) {
+          let result = await db.postSchema.find({ _id: post._id }).populate('comments').populate('likes').exec();
+          postsArray.push(result);
+      }
+      if (postsArray[0].length > 0)
+      res.send(postsArray.slice(index, index + 2))
+  } catch (e) {
+      console.log(e);
+  }
+});
 module.exports = router;

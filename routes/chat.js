@@ -49,16 +49,44 @@ module.exports = function (io) {
         newMessage.from = socket._id;
         newMessage.to = id;
         newMessage.text = message.msg;
-        newMessage.save();
-        messageNew = {
-          msg: message.msg,
-          senderId: socket._id
+        newMessage.save().then((m) => {
+          messageNew = {
+            msg: message.msg,
+            senderId: socket._id,
+            receiverId: id,
+            msgId: m._id
+          }
+          db.userSchema.findOne({_id: socket._id}).exec((err, user) => {
+            newMessageforChatList = {
+              text: message.msg,
+              from: {_id: socket._id, name: user.name},
+              to: id,
+              date: m.date,
+              _id: m._id
+
+            }
+            for (let i = 0; i < array_of_connection.length; i++) {
+              if (array_of_connection[i]._id == id) {
+                array_of_connection[i].emit("new-msg-list", newMessageforChatList)
+              }
+              if (array_of_connection[i]._id == socket._id){
+                array_of_connection[i].emit("new-msg-list", newMessageforChatList)
+              }
+            }
+          })
+          
+        for (let i = 0; i < array_of_connection.length; i++) {
+          if (array_of_connection[i]._id == id) {
+            // array_of_connection[i].emit("new-msg-list", newMessageforChatList)
+            array_of_connection[i].emit("msg", messageNew);
+          }
+          // if (array_of_connection[i]._id == socket._id){
+          //   array_of_connection[i].emit("new-msg-list", newMessageforChatList)
+          // }
         }
-      for (let i = 0; i < array_of_connection.length; i++) {
-        if (array_of_connection[i]._id == id) {
-          array_of_connection[i].emit("msg", messageNew);
-        }
-      }
+        });
+       
+        
     });
     socket.on("new-post", (post) => {
       db.userSchema
@@ -114,9 +142,9 @@ module.exports = function (io) {
               .exec((err, post) => {
                 let friendList = post.owner.friends
                 for (let conn of array_of_connection) {
-                  if (friendList.indexOf(conn._id) !== -1) {
+                  // if (friendList.indexOf(conn._id) !== -1) {
                     io.to(conn.id).emit("new-comment-posted", comment)
-                  }
+                  // }
                 }               
               });
           })
@@ -155,9 +183,9 @@ module.exports = function (io) {
                 console.log('0000 ', like1) 
                 let friendList = post.owner.friends
                 for (let conn of array_of_connection) {
-                  if (friendList.indexOf(conn._id) !== -1) {
+                 // if (friendList.indexOf(conn._id) !== -1) {
                     io.to(conn.id).emit("remove-like", like1)
-                  }
+                 // }
                 }    
               })
             })
@@ -173,14 +201,13 @@ module.exports = function (io) {
               .exec((err, post) => {
                 let friendList = post.owner.friends
                 for (let conn of array_of_connection) {
-                  if (friendList.indexOf(conn._id) !== -1) {
+                 // if (friendList.indexOf(conn._id) !== -1) {
                     io.to(conn.id).emit("add-like", like)
-                  }
+                 // }
                 }    
               })
              
           });
-            // console.log('post id new ', postId.postID)
         }
       })
 

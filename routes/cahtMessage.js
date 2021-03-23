@@ -6,7 +6,6 @@ const db = require("../db/db");
 const checkJwt = require("./../middleware/checkAuth");
 
 router.get('/:receiverId', checkJwt, (req, res, next) => {
-     console.log('u', req.params.receiverId)
     db.chatSchema.find({
         $or: [
             
@@ -25,5 +24,6 @@ router.get('/:receiverId', checkJwt, (req, res, next) => {
         res.json(messages)
     })
 })
+
 
 module.exports = router;

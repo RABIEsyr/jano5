@@ -25,6 +25,7 @@ const friendRequestRoute = require("./routes/friendRequest");
 const notificationsRoute = require("./routes/notifications");
 const commentRoute = require("./routes/comment");
 const chatMessageRoute = require("./routes/cahtMessage");
+const getAllMessages = require("./routes/getAllMessages");
 
 mongoose.Promise = global.Promise;
 const ConnectionUri = config.db;
@@ -36,23 +37,23 @@ mongoose.connect(ConnectionUri, (err) => {
   console.log("successfully connected to database ..");
 });
 
-const user1 = new db.userSchema();
-user1.name = 'samer'
-user1.email = "samer@samer.samer"
-user1.friendRequest = []
-user1.friends = []
-db.userSchema.findOne({ email: 'samer@samer.samer' })
-  .exec((err, user) => {
-    if (err) console.log('server samer: ', err)
-    if (!user) {
-      user1.save((err, doc) => {
-        fs.readFile(`uploads/avatar.png`, (err, data) => {
-          fs.writeFile('uploads/' + doc._id + ".PNG", data, 'base64', function (err) {
-          });
-        })
-      })
-    }
-  })
+// const user1 = new db.userSchema();
+// user1.name = 'samer'
+// user1.email = "samer@samer.samer"
+// user1.friendRequest = []
+// user1.friends = []
+// db.userSchema.findOne({ email: 'samer@samer.samer' })
+//   .exec((err, user) => {
+//     if (err) console.log('server samer: ', err)
+//     if (!user) {
+//       user1.save((err, doc) => {
+//         fs.readFile(`uploads/avatar.png`, (err, data) => {
+//           fs.writeFile('uploads/' + doc._id + ".PNG", data, 'base64', function (err) {
+//           });
+//         })
+//       })
+//     }
+//   })
 
 app.set("socketio", app.io);
 app.io = io;
@@ -96,6 +97,7 @@ app.use("/friend-request", friendRequestRoute);
 app.use("/notifications", notificationsRoute);
 app.use("/comment", commentRoute);
 app.use("/chat-message", chatMessageRoute);
+app.use("/get-all-messages", getAllMessages);
 
 const path = require("path");
 const expressSS = require("express");

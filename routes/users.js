@@ -40,4 +40,14 @@ router.post("/search-user", checkJwt, async (req, res, next) => {
   );
 });
 
+router.get('/get-username', checkJwt, (req, res, next) => {
+  res.json(req.decoded.user.name)
+});
+
+router.post('/get-name-chat', checkJwt, (req, res, next) => {
+  db.userSchema.findOne({_id: req.body.id})
+    .exec((err, user) => {
+       res.send({name: user.name, _id:user._id})
+    })
+})
 module.exports = router;

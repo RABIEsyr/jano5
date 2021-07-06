@@ -31,6 +31,7 @@ router.get('', checkJwt, async(req, res, next) => {
             ]
         })
         .populate('from')
+        .populate('to')
         chat1.push(chat[chat.length -1])
 
     }   

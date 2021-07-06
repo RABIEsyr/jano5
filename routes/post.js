@@ -38,10 +38,15 @@ router.post("/new-post", checkJwt, upload.single("file"), (req, res, next) => {
           success: false,
         });
       } else {
-        res.json({
-          success: true,
-          post,
-        });
+        db.postSchema.findOne({_id:post._id})
+        .populate('owner')
+        .exec((err, post) =>{
+          res.json({
+            success: true,
+            post,
+          });
+        })
+        
       }
     });
   });
@@ -81,27 +86,33 @@ router.get('/friends-post', checkJwt, async (req, res) => {
   let posts = []
   let finalPosts = []
 
-  db.userSchema.findOne({ _id: id })
+  try {
+    db.userSchema.findOne({ _id: id })
     .exec((err, frnds) => {
       fs = frnds.friends
       posts = db.postSchema.find()
          .populate('comments')
          .populate('likes')
+         .populate('owner')
           .exec()
       posts.then((value) => {
         value.map(p => {
 
           for (let i = 0; i < value.length; i++) {
-            if (p.owner.toString() == fs[i]) {
-              finalPosts.push(p)
+            if (p.owner._id.toString() == fs[i]) {
+              finalPosts.unshift(p)
             }
           }
 
         })
-        res.send(finalPosts.slice(index, index + 2))
+        res.json(finalPosts.slice(index, index + 2))
       })
     })
 
+  } catch (error) {
+    
+  }
+  
 
 
 
@@ -164,7 +175,7 @@ router.get('/user-post/:id', checkJwt, async (req, res, next) => {
       let postsArray = [];
       for (let post of da.posts) {
           let result = await db.postSchema.find({ _id: post._id }).populate('comments').populate('likes').exec();
-          postsArray.push(result);
+          postsArray.unshift(result);
       }
       if (postsArray[0].length > 0)
       res.send(postsArray.slice(index, index + 2))

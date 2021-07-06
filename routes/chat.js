@@ -57,10 +57,20 @@ module.exports = function (io) {
             msgId: m._id
           }
           db.userSchema.findOne({_id: socket._id}).exec((err, user) => {
+            db.userSchema.findOne({_id: id}).exec((err, user2) => {
             newMessageforChatList = {
               text: message.msg,
               from: {_id: socket._id, name: user.name},
               to: id,
+              date: m.date,
+              _id: m._id
+
+            }
+
+            newMessageforChatList2 = {
+              text: message.msg,
+              from: {_id: socket._id, name: user.name},
+              to: {_id: user2._id, name: user2.name},
               date: m.date,
               _id: m._id
 
@@ -70,10 +80,11 @@ module.exports = function (io) {
                 array_of_connection[i].emit("new-msg-list", newMessageforChatList)
               }
               if (array_of_connection[i]._id == socket._id){
-                array_of_connection[i].emit("new-msg-list", newMessageforChatList)
+                array_of_connection[i].emit("new-msg-list2", newMessageforChatList2)
               }
             }
           })
+        })
           
         for (let i = 0; i < array_of_connection.length; i++) {
           if (array_of_connection[i]._id == id) {
@@ -96,13 +107,70 @@ module.exports = function (io) {
           for (let i = 0; i < array_of_connection.length; i++) {
             for (let j = 0; j < users.friends.length; j++) {
               if (array_of_connection[i]._id == users.friends[j]._id) {
+                
+                post['owner'] ='gggggg'
                 array_of_connection[i].emit("new-post", post);
               }
             }
           }
         });
+        post.owner ='gggggg'
       socket.emit("new-post", post);
     });
+    socket.on('edit-post', (post) => {
+     db.postSchema.findOneAndUpdate({_id: post.id}, {text: post.text}).exec((err, res) => {
+       db.userSchema.findOne({_id: post.owner})
+       .populate('friends')
+       .exec((err, users) => {
+        for (let i = 0; i < array_of_connection.length; i++) {
+          for (let j = 0; j < users.friends.length; j++) {
+            if (array_of_connection[i]._id == users.friends[j]._id) {
+              array_of_connection[i].emit("edit-post", post);
+            }
+          }
+        }
+        for (let i = 0; i < array_of_connection.length; i++) { 
+         if (array_of_connection[i]._id == socket._id){
+          array_of_connection[i].emit("edit-post", post)
+         }
+        }
+       })
+     })
+      // console.log('chat, edit-post', post)
+      // for (let i = 0; i < array_of_connection.length; i++) {
+       
+          // array_of_connection[i].emit("new-msg-list", newMessageforChatList)
+          // array_of_connection[i].emit("edit-post", post);
+        
+        // if (array_of_connection[i]._id == socket._id){
+        //   array_of_connection[i].emit("new-msg-list", newMessageforChatList)
+        // }
+      // }
+      });
+     
+    socket.on('delete-post', (post) => {
+      console.log('chat.js, delete-post', post);
+      db.postSchema.findOneAndRemove({_id: post.postid}).exec((err, res) => {
+        db.userSchema.findOneAndUpdate({_id: post.ownerid},
+          { $pull: { posts:  mongoose.Types.ObjectId(post.postid.toString())
+          } })
+        .populate('friends')
+        .exec((err, users) => {
+         for (let i = 0; i < array_of_connection.length; i++) {
+           for (let j = 0; j < users.friends.length; j++) {
+             if (array_of_connection[i]._id == users.friends[j]._id) {
+               array_of_connection[i].emit("delete-post", post);
+             }
+           }
+         }
+         for (let i = 0; i < array_of_connection.length; i++) { 
+          if (array_of_connection[i]._id == socket._id){
+           array_of_connection[i].emit("delete-post", post)
+          }
+         }
+        })
+      })
+    })
 
     socket.on("new-fr-req", (id) => {
       for (let i = 0; i < array_of_connection.length; i++) {

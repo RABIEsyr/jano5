@@ -126,13 +126,13 @@ router.get('/history', checkJwt,async (req, res, next) => {
       const collection = client.db("test").collection("devices");
     bookingList = await collection.find({expirayDate: {$lt: cDate}}).toArray() 
     console.log('dddddd', bookingList)
-    res.json(bookingList.slice(0, 4))
+    res.send(bookingList.slice(0, 4))
     count +=4
     // client.close();
     })
   } else {
     if (count <= bookingList.length) {
-      res.json(bookingList.slice(count, count + 1))
+      res.send(bookingList.slice(count, count + 1))
     } else {
       res.json(true)
     }

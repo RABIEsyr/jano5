@@ -78,12 +78,12 @@ router.post("/add-booking", checkJwt, async (req, res, next) => {
     if (err) {
       console.log("cannot add obj");
       res.json({success: false})
-      client.close();
+      // client.close();
       return;
     }
 
   console.log("Added a user");
-  client.close();
+   client.close();
   res.json({success: true})
 });
 });
@@ -106,7 +106,7 @@ router.get('/active-booking', checkJwt, async (req, res, next) => {
       }
   
     console.log("get active booking");
-    client.close();
+    //  client.close();
     console.log('rrrr', r)
     res.send(r)
   });

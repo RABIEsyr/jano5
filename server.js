@@ -22,9 +22,25 @@ const checkAuth = require('./routes/checkAuth');
 
 
 mongoose.Promise = global.Promise;
-const { MongoClient } = require('mongodb');
-const uri = "mongodb+srv://jan:jano1111@cluster0.5kxltgc.mongodb.net/?retryWrites=true&w=majority";
-const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+//  const { MongoClient } = require('mongodb');
+//  const uri = "mongodb+srv://jan:jano1111@cluster0.5kxltgc.mongodb.net/?retryWrites=true&w=majority";
+//  const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+const url = 'mongodb+srv://jan:jano1111@cluster0.5kxltgc.mongodb.net/?retryWrites=true&w=majority"';
+
+const connectionParams={
+    useNewUrlParser: true,
+    useCreateIndex: true,
+    useUnifiedTopology: true 
+}
+mongoose.connect(url,connectionParams)
+    .then( () => {
+        console.log('Connected to database ')
+    })
+    .catch( (err) => {
+        console.error(`Error connecting to the database. \n${err}`);
+    })
+
 
 // mongoose.Promise = global.Promise;
 // const ConnectionUri = config.db;
@@ -66,4 +82,5 @@ http.listen(port, (err) => {
     console.log(`server running on port ${port}`);
   }
 });
+
 

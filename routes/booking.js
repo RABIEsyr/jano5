@@ -9,8 +9,9 @@ const checkJwt = require("../middleware/checkAuth");
 const { MongoClient } = require('mongodb');
 const uri = "mongodb+srv://jan:jano1111@cluster0.5kxltgc.mongodb.net/?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-// const {client} = require('../server');
 
+let count = 0;
+let bookingList = [];
 
 router.post("/add-booking", checkJwt, async (req, res, next) => {
   console.log(req.body)
@@ -31,8 +32,14 @@ router.post("/add-booking", checkJwt, async (req, res, next) => {
   if (req.body.notes)
   notes = req.body.notes
 
-//  const newBooking = new db.bookingSchema();
-const newBooking = {};
+  let expiryDate =   new Date();
+  let startDay2 = new Date(startDate)
+  let result = expiryDate.setDate(startDay2.getDate() + +days);
+  expiryDate = new Date(result)
+
+  //const newBooking = new db.bookingSchema();
+
+  const newBooking = {};
 
  newBooking.place = name;
  newBooking.location = location;
@@ -49,6 +56,8 @@ const newBooking = {};
  newBooking.days = +days;
 
  newBooking.notes = notes;
+
+ newBooking.expirayDate = expiryDate;
 
 //  newBooking.save((err, b) => {
 //    if (err) {
@@ -69,6 +78,7 @@ const newBooking = {};
     if (err) {
       console.log("cannot add obj");
       res.json({success: false})
+      client.close();
       return;
     }
 
@@ -81,22 +91,76 @@ const newBooking = {};
 });
 
 router.get('/active-booking', checkJwt, async (req, res, next) => {
-  // const bookingList = await db.bookingSchema.find({});
+  let cDate = new Date();
+  
+  // const bookingList = await db.bookingSchema.find({expirayDate: {$gte: cDate}});
   // res.json(bookingList)
   
-  const { MongoClient } = require('mongodb');
- const uri = "mongodb+srv://jan:jano1111@cluster0.5kxltgc.mongodb.net/?retryWrites=true&w=majority";
- const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-  client.connect( async err => {
+  client.connect(err => {
     const collection = client.db("test").collection("devices");
-   const a = await collection.find({}).toArray();
+    collection.find({expirayDate: {$gte: cDate}}).toArray(function(err, r) {
+      if (err) {
+        console.log("cannot add obj");
+        res.json({success: false})
+        return;
+      }
   
-    console.log(a);
+    console.log("get active booking");
     client.close();
-    res.json(a)
-  
+    console.log('rrrr', r)
+    res.send(r)
   });
   });
   
+  
+});
+  
+router.get('/history', checkJwt,async (req, res, next) => {
+  
+  console.log('count', count)
+  let cDate = new Date();
+  
+  if (count == 0) {
+    // bookingList = await db.bookingSchema.find({expirayDate: {$lt: cDate}}).sort('-createdAt');
+    client.connect(async err => {
+      const collection = client.db("test").collection("devices");
+    bookingList = await collection.find({expirayDate: {$lt: cDate}}).toArray() 
+    console.log('dddddd', bookingList)
+    res.json(bookingList.slice(0, 4))
+    count +=4
+    // client.close();
+    })
+  } else {
+    if (count <= bookingList.length) {
+      res.json(bookingList.slice(count, count + 1))
+    } else {
+      res.json(true)
+    }
+   count +=4
+  }
+});
+
+router.get('/get-history-length', checkJwt, async (req, res, next) => {
+    let cDate = new Date();
+   
+    // bookingList = await db.bookingSchema.find({expirayDate: {$lt: cDate}}).sort('-createdAt');
+   
+    client.connect(async err => {
+      const collection = client.db("test").collection("devices");
+    bookingList = await collection.find({expirayDate: {$lt: cDate}}).toArray() 
+  
+    // client.close();
+    console.log('llllll', bookingList.length)
+    res.json(bookingList.length)
+    })
+    // console.log('dddddd', bookingList.length)
+    // res.json(bookingList.length)
+});
+
+router.get('/reset-count', checkJwt, (req, res, next) => {
+  count = 0;
+  bookingList = [];
+  res.json('reset')
+})
 
 module.exports = router;

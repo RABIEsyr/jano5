@@ -19,35 +19,12 @@ const indexRoute = require("./routes/index");
 const checkAuth = require('./routes/checkAuth');
 
 
-// var MongoClient = require('mongodb').MongoClient;
-// var uri = "mongodb://jan:jano1111@ac-xg9w5fh-shard-00-00.5kxltgc.mongodb.net:27017,ac-xg9w5fh-shard-00-01.5kxltgc.mongodb.net:27017,ac-xg9w5fh-shard-00-02.5kxltgc.mongodb.net:27017/?ssl=true&replicaSet=atlas-e905gh-shard-0&authSource=admin&retryWrites=true&w=majority";
-// MongoClient.connect(uri, function(err, client) {
-//  if (!err) {
-//    console.log('111111')
-//  }
-// });
 
 
 mongoose.Promise = global.Promise;
-
 const { MongoClient } = require('mongodb');
 const uri = "mongodb+srv://jan:jano1111@cluster0.5kxltgc.mongodb.net/?retryWrites=true&w=majority";
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
-// client.connect(err => {
-//   const collection = client.db("test").collection("devices");
-//   collection.insertOne({name: 'ss'}, function(err, r) {
-//     if (err) {
-//       console.log("cannot add obj");
-//       return;
-//     }
-
-//     console.log("Added a user");
-//   client.close();
-// });
-// });
-  
-
-
 
 // mongoose.Promise = global.Promise;
 // const ConnectionUri = config.db;
@@ -90,4 +67,3 @@ http.listen(port, (err) => {
   }
 });
 
-module.exports.client = client
